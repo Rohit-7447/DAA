@@ -1,0 +1,98 @@
+import java.util.*;
+
+public class MultistageGraph {
+
+    static final int INF = 1000000000; // Equivalent to 1e9
+
+    public static void main(String[] args) {
+
+        int stages = 3;
+        int[] nodesInStage = {2, 2, 2};
+
+        // 1. Create Stage Nodes structure
+        ArrayList<ArrayList<Integer>> stageNodes = new ArrayList<>();
+        int id = 0;
+        
+        for (int i = 0; i < stages; i++) {
+            ArrayList<Integer> currentStageNodes = new ArrayList<>();
+            for (int j = 0; j < nodesInStage[i]; j++) {
+                currentStageNodes.add(id++);
+            }
+            stageNodes.add(currentStageNodes);
+        }
+
+        int totalNodes = id;
+        
+        // 2. Initialize Cost Matrix
+        int[][] cost = new int[totalNodes][totalNodes];
+        for (int[] row : cost) {
+            Arrays.fill(row, INF);
+        }
+
+        // Stage 0 to Stage 1
+        cost[0][2] = 1;  // node 0 to node 2
+        cost[0][3] = 3;  // node 0 to node 3
+        cost[1][2] = 2;  // node 1 to node 2
+        cost[1][3] = 4;  // node 1 to node 3
+        
+        // Stage 1 to Stage 2
+        cost[2][4] = 2;  // node 2 to node 4
+        cost[2][5] = 1;  // node 2 to node 5
+        cost[3][4] = 4;  // node 3 to node 4
+        cost[3][5] = 5;  // node 3 to node 5
+
+        // 3. Initialize MinCost and Parent arrays
+        int[] minCost = new int[totalNodes];
+        Arrays.fill(minCost, INF);
+        
+        int[] parent = new int[totalNodes];
+        Arrays.fill(parent, -1);
+
+        // Set cost for first stage nodes to 0
+        for (int u : stageNodes.get(0)) {
+            minCost[u] = 0;
+        }
+
+        // 4. DP Logic (Forward Pass)
+        for (int i = 1; i < stages; i++) {
+            for (int v : stageNodes.get(i)) {       // Current Stage Nodes
+                for (int u : stageNodes.get(i-1)) { // Previous Stage Nodes
+                    
+                    // Check if path is shorter
+                    if (minCost[u] != INF && cost[u][v] != INF) {
+                        if (minCost[u] + cost[u][v] < minCost[v]) {
+                            minCost[v] = minCost[u] + cost[u][v];
+                            parent[v] = u;
+                        }
+                    }
+                }
+            }
+        }
+
+        // 5. Find best node in the last stage
+        int bestNode = -1;
+        int bestCost = INF;
+        for (int v : stageNodes.get(stages - 1)) {
+            if (minCost[v] < bestCost) {
+                bestCost = minCost[v];
+                bestNode = v;
+            }
+        }
+
+        // 6. Reconstruct Path
+        ArrayList<Integer> path = new ArrayList<>();
+        int cur = bestNode;
+        while (cur != -1) {
+            path.add(cur);
+            cur = parent[cur];
+        }
+        Collections.reverse(path);
+
+        // 7. Output
+        System.out.print("\nOptimal path through stages: ");
+        for (int x : path) {
+            System.out.print(x + " ");
+        }
+        System.out.println("\nMinimum total cost: " + bestCost);
+    }
+}

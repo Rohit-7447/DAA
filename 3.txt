@@ -1,0 +1,72 @@
+import java.util.*;
+
+class Item {
+    String name;
+    double weight, value;
+    boolean divisible;
+    int priority;
+
+    Item(String n, double w, double v, boolean d, int p) {
+        name = n; weight = w; value = v; divisible = d; priority = p;
+    }
+    double ratio() { return value / weight; }
+}
+
+public class ReliefBoat {
+    public static void main(String[] args) {
+        List<Item> items = new ArrayList<>(Arrays.asList(
+            new Item("Infant Formula", 5, 50, false, 1),
+            new Item("Medical Kits", 10, 100, false, 1),
+            new Item("Drinking Water", 30, 90, true, 2),
+            new Item("Water Filters", 2, 8, false, 2),
+            new Item("Blankets", 15, 45, false, 3),
+            new Item("Food Packets", 20, 60, true, 3)
+        ));
+
+        Scanner sc = new Scanner(System.in);
+        System.out.print("🛶 Emergency Relief Boat Loading System\nCapacity (kg): ");
+        double capacity = sc.nextDouble();
+
+        // Sort: Priority (Asc), then Ratio (Desc)
+        items.sort((a, b) -> {
+            if (a.priority != b.priority) return Integer.compare(a.priority, b.priority);
+            return Double.compare(b.ratio(), a.ratio());
+        });
+
+        System.out.println("\n--- Sorted Items ---");
+        // Changed header "Type" to "Divisible"
+        System.out.printf("%-20s %-10s %-10s %-10s %-15s %-10s\n", "Item", "Weight", "Value", "Priority", "Val/Wgt", "Divisible");
+        System.out.println(String.join("", Collections.nCopies(80, "-")));
+
+        for (Item i : items) {
+            // Changed output to Yes/No
+            System.out.printf("%-20s %-10.1f %-10.1f %-10d %-15.2f %-10s\n", 
+                i.name, i.weight, i.value, i.priority, i.ratio(), (i.divisible ? "Yes" : "No"));
+        }
+
+        double totalValue = 0, totalWeight = 0;
+        System.out.println("\n--- Transport Summary ---");
+
+        for (Item i : items) {
+            if (capacity <= 0) break;
+
+            double take = i.divisible ? Math.min(i.weight, capacity) : (i.weight <= capacity ? i.weight : 0);
+            
+            if (take == 0 && !i.divisible) {
+                System.out.printf(" - Divisible: No  | %s (Skipped: Too Heavy)\n", i.name);
+                continue;
+            }
+
+            double val = take * i.ratio();
+            totalValue += val;
+            totalWeight += take;
+            capacity -= take;
+
+            System.out.printf(" - Divisible: %-3s | %-15s | Taken: %5.1f kg | Utility: %6.2f\n", 
+                (i.divisible ? "Yes" : "No"), i.name, take, val);
+        }
+
+        System.out.println("\nFINAL TOTALS");
+        System.out.printf("Total Weight: %.2f kg | Remaining Cap: %.2f kg | Total Value: %.2f\n", totalWeight, Math.max(0, capacity), totalValue);
+    }
+}
