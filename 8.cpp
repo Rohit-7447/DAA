@@ -1,3 +1,4 @@
+//Branch and Bound
 #include <bits/stdc++.h>
 using namespace std;
 
@@ -11,7 +12,6 @@ struct Node {
     int vertex; 
     int level; 
 };
-
 
 int reduceMatrix(vector<vector<int>>& mat) {
     int reduction = 0;
